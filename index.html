@@ -1,0 +1,2056 @@
+<!doctype html>
+<html lang="zh-CN" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="《凡人修仙传》人界篇非官方开放世界人生模拟器：从凡人、散修、宗门弟子或家族子弟起步，在寿元、瓶颈、资源与真实死亡之间走出自己的仙路。">
+<title>凡人修仙传：人界篇开放世界模拟器</title>
+<style>:root {
+  color-scheme: light dark;
+  background-color: transparent !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --main-surface-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: light-dark(rgb(26 28 31), rgb(255 255 255));
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(--foreground);
+  --popover: light-dark(rgb(255 255 255), rgb(45 45 45));
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --primary-foreground: light-dark(rgb(255 255 255), rgb(13 13 13));
+  --secondary: light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%));
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: light-dark(
+    rgb(26 28 31 / 49.4%),
+    rgb(255 255 255 / 49.8%)
+  );
+  --accent: light-dark(rgb(229 242 255), rgb(13 39 63));
+  --accent-foreground: var(--primary);
+  --destructive: light-dark(rgb(226 85 7), rgb(255 133 73));
+  --border: light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%));
+  --input: light-dark(
+    rgb(26 28 31 / 11.8%),
+    color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+  );
+  --ring: light-dark(rgb(51 156 255), rgb(131 195 255 / 76%));
+  --font-size-base: 14px;
+  --red: light-dark(rgb(186 38 35), rgb(250 66 62));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: 10px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17'%3E%3Cpath d='M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z'/%3E%3C/svg%3E");
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+  --color-background-primary: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-border-secondary: var(--border);
+}
+
+:root[data-visualize-standalone] {
+  background-color: var(--background) !important;
+}
+
+/* Generic mobile code-block hosts provide light/dark mode but no series palette.
+   AppBlock hosts set all six variables themselves. */
+:root:not([data-app-block-surface]) {
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(#f3883b, #f59a56);
+  --viz-series-3: light-dark(#5dc977, #74d58b);
+  --viz-series-4: light-dark(#eb77b1, #f08fc0);
+  --viz-series-5: light-dark(#9b79ec, #aa91ef);
+  --viz-series-6: light-dark(#3ab9b1, #5acbc2);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html > body {
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+:root:not([data-app-block-surface]) > body {
+  padding: 12px;
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive > .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align="right"]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align="center"]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget > :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The bundled tooltip runtime owns [data-tooltip]. AppBlock's CSS-only
+   pseudo-tooltip can widen dense grids even while hidden. */
+main [data-tooltip]::after {
+  content: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls > .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls > .form-label > :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--interactive-label-primary-default, var(--primary-foreground));
+  background: var(--interactive-bg-primary-default, var(--foreground));
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(
+    in srgb,
+    var(--interactive-label-primary-default, var(--primary-foreground)) 50%,
+    transparent
+  );
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type="file"] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type="file"]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type="file"]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type="color"] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type="checkbox"]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: "";
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type="radio"]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: "";
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed="true"], [aria-selected="true"], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget > svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+</style>
+</head>
+<body>
+<div id="fanren-human-world" class="fr-root">
+  <style>
+    #fanren-human-world {
+      --fr-ink: var(--foreground);
+      --fr-soft: var(--muted-foreground);
+      --fr-line: var(--border);
+      --fr-wash: color-mix(in srgb, var(--accent) 42%, transparent);
+      --fr-seal: color-mix(in srgb, var(--destructive) 72%, var(--card));
+      color: var(--fr-ink);
+      width: 100%;
+    }
+    #fanren-human-world .fr-mast {
+      position: relative;
+      overflow: hidden;
+      padding-block: 1rem;
+      margin-bottom: 1rem;
+      border-block: 1px solid var(--fr-line);
+      background:
+        radial-gradient(circle at 14% 20%, var(--fr-wash), transparent 38%),
+        linear-gradient(110deg, transparent, color-mix(in srgb, var(--card) 68%, transparent), transparent);
+    }
+    #fanren-human-world .fr-mast::after {
+      content: "人界";
+      position: absolute;
+      inset-inline-end: 1rem;
+      inset-block-start: .75rem;
+      writing-mode: vertical-rl;
+      padding: .4rem .25rem;
+      color: var(--primary-foreground);
+      background: var(--fr-seal);
+      border-radius: .2rem;
+      letter-spacing: .18em;
+      opacity: .82;
+    }
+    #fanren-human-world .fr-kicker,
+    #fanren-human-world .fr-step,
+    #fanren-human-world .fr-phase {
+      color: var(--fr-soft);
+      letter-spacing: .08em;
+    }
+    #fanren-human-world .fr-quote { max-width: 34rem; }
+    #fanren-human-world .fr-quote p { margin: .25rem 0; }
+    #fanren-human-world .fr-setup-actions,
+    #fanren-human-world .fr-toolbar,
+    #fanren-human-world .fr-modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+    }
+    #fanren-human-world .fr-setup-actions { margin-top: 1rem; }
+    #fanren-human-world .fr-toolbar { margin-bottom: .75rem; }
+    #fanren-human-world .fr-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(13.5rem, 15rem);
+      gap: .75rem;
+      align-items: start;
+    }
+    #fanren-human-world .fr-story,
+    #fanren-human-world .fr-status { min-width: 0; }
+    #fanren-human-world .fr-status { position: sticky; top: .5rem; }
+    #fanren-human-world .fr-outcome {
+      margin-bottom: .75rem;
+      padding-inline-start: .75rem;
+      border-inline-start: 2px solid var(--primary);
+      color: var(--fr-soft);
+    }
+    #fanren-human-world .fr-dialogue {
+      margin-block: .75rem;
+      padding-inline-start: .75rem;
+      border-inline-start: 2px solid var(--fr-line);
+    }
+    #fanren-human-world .fr-dialogue strong { color: var(--fr-ink); }
+    #fanren-human-world .fr-broadcast {
+      margin-block: .75rem;
+      padding-block: .55rem;
+      border-block: 1px solid var(--fr-line);
+    }
+    #fanren-human-world .fr-choice-title { display: block; margin-block: .25rem; }
+    #fanren-human-world .fr-choice-hint { display: block; color: var(--fr-soft); }
+    #fanren-human-world .fr-status-list { margin: 0; }
+    #fanren-human-world .fr-status-list div {
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      padding-block: .35rem;
+      border-bottom: 1px solid var(--fr-line);
+    }
+    #fanren-human-world .fr-status-list dt { color: var(--fr-soft); }
+    #fanren-human-world .fr-status-list dd { margin: 0; text-align: end; }
+    #fanren-human-world .fr-list { margin-block: .5rem 0; padding-inline-start: 1.1rem; }
+    #fanren-human-world .fr-list li { margin-block: .25rem; }
+    #fanren-human-world .fr-name-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .5rem;
+      align-items: end;
+      max-width: 32rem;
+    }
+    #fanren-human-world .fr-free { margin-top: .75rem; }
+    #fanren-human-world .fr-free textarea,
+    #fanren-human-world .fr-import textarea { min-height: 6rem; resize: vertical; }
+    #fanren-human-world .fr-modal-layer {
+      margin-top: .75rem;
+    }
+    #fanren-human-world .fr-modal-layer[hidden],
+    #fanren-human-world [hidden] { display: none !important; }
+    #fanren-human-world .fr-snapshot {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      max-height: 18rem;
+      overflow: auto;
+    }
+    #fanren-human-world progress { width: 100%; }
+    #fanren-human-world .fr-death { color: var(--destructive); }
+    #fanren-human-world .fr-history { max-height: 12rem; overflow: auto; }
+    @media (max-width: 680px) {
+      #fanren-human-world .fr-layout { grid-template-columns: 1fr; }
+      #fanren-human-world .fr-status { position: static; }
+      #fanren-human-world .fr-name-row { grid-template-columns: 1fr; }
+    }
+  </style>
+  <div id="fr-app" aria-live="polite"></div>
+</div>
+<script>
+(() => {
+  "use strict";
+  const root = document.getElementById("fanren-human-world");
+  const app = root.querySelector("#fr-app");
+  const SAVE_KEY = "fanren_human_world_v1";
+  const LAST_NAME_KEY = "fanren_human_world_last_name";
+
+  const TIMEPOINTS = {
+    A: {
+      name: "七玄门时期",
+      subtitle: "凡人江湖的刀光剑影下，仙路才露出一道细缝",
+      location: "七玄门外山道",
+      memory: "【A·七玄门时期】你记得：人界的境界常识、灵根与灵石、修仙界的丛林法则；你知道七玄门有个叫韩立的杂役，将来会成了不起的人物——但此刻他还只是个采药童子。你不记得：此后的一切——血色禁地、正魔大战、乱星海、虚天殿，它们还没发生，或正在暗处发生。",
+      schedule: [[1,5,"① 落脚"],[6,12,"② 神手谷"],[13,20,"③ 江湖刀光"],[21,28,"④ 踏上仙路"],[29,999,"⑤ 自由延续"]]
+    },
+    B: {
+      name: "黄枫谷时期",
+      subtitle: "越国七派并立，血色禁地将开，风暴已压到山门",
+      location: "黄枫谷山门",
+      memory: "【B·黄枫谷时期】你记得：上面的全部＋韩立已拜入黄枫谷、越国七派的格局、正魔大战的气息越来越近。你不记得：虚天殿的真相、玄骨上人的伪装、韩立的最终去向，以及此后的一切。",
+      schedule: [[1,5,"① 落脚"],[6,14,"② 血色禁地"],[15,22,"③ 坊市岁月"],[23,28,"④ 正魔风云"],[29,999,"⑤ 自由延续"]]
+    },
+    C: {
+      name: "乱星海时期",
+      subtitle: "散修的天堂与坟墓，虚天殿开启的消息正在海上扩散",
+      location: "魁星岛渡口",
+      memory: "【C·乱星海时期】你记得：上面的全部＋韩立已结丹入乱星海、虚天殿即将开启、夺宝的各方势力齐聚。你不记得：虚天殿之行的结局、玄骨上人的算计、此后的一切。",
+      schedule: [[1,5,"① 落脚"],[6,12,"② 星海风云"],[13,20,"③ 虚天殿前奏"],[21,30,"④ 虚天殿"],[31,999,"⑤ 自由延续"]]
+    }
+  };
+
+  const IDENTITIES = {
+    mortal: {name:"凡人", desc:"没有修仙履历，十七八岁，银钱就是全部家当。", age:18, rank:0, stones:0, item:"七枚铜板", caller:"挑柴的阿成"},
+    rogue: {name:"散修", desc:"无门无派，二三十岁，见过修仙界最薄的情分。", age:26, rank:2, stones:4, item:"一块劣质灵石", caller:"同路散修赵平"},
+    sect: {name:"宗门弟子", desc:"有月例、有门规，也在需要时被写进名单。", age:16, rank:3, stones:3, item:"外门弟子木牌", caller:"外门执事"},
+    clan: {name:"家族子弟", desc:"家族给你第一份资源，也把兴衰系到你身上。", age:17, rank:2, stones:5, item:"祖传青玉牌", caller:"族兄"}
+  };
+
+  const ROOTS = {
+    four: {name:"伪灵根（四/五属性）", short:"伪灵根", desc:"原著中的低资质灵根，修炼最慢，破境最依赖丹药与机缘。", speed:32, attention:0, timeFactor:1.4},
+    three: {name:"真灵根（三属性）", short:"三灵根", desc:"资质普通，修炼速度与瓶颈都处在修仙界常态。", speed:42, attention:1, timeFactor:1.15},
+    double: {name:"真灵根（双属性）", short:"双灵根", desc:"资质上佳，修炼明显快于普通三灵根修士。", speed:50, attention:3, timeFactor:.9},
+    heaven: {name:"天灵根（单属性）", short:"天灵根", desc:"修炼速度比普通灵根快数倍，结丹没有瓶颈；也最容易被势力盯上。", speed:60, attention:6, timeFactor:.55},
+    mutant: {name:"变异灵根（雷/冰/风等）", short:"异灵根", desc:"两三种五行属性异变而成，修炼速度不下于天灵根，神通路线独特。", speed:58, attention:7, timeFactor:.65}
+  };
+
+  const START_OFFSETS = {A:{mortal:0,rogue:0,sect:0,clan:0},B:{mortal:0,rogue:4,sect:2,clan:2},C:{mortal:0,rogue:13,sect:11,clan:10}};
+
+  const event = (id, title, narration, speaker, line, location, safe, bold, explore) => ({id,title,narration,speaker,line,location,safe,bold,explore});
+  const choice = (title, hint, result, effect={}) => ({title,hint,result,effect});
+
+  const EVENTS = {
+    A: {
+      "① 落脚": [
+        event("a_gate","山门脚夫","石阶上滚下一只药篓，晒干的黄精撒进泥里。两名外门弟子只顾争吵。","守门弟子","药材少一钱，你来赔。","七玄门山门",
+          choice("蹲下逐根捡净药材","泥里混着碎石，耽误半日也未必讨好。","你把药材分拣干净，药篓底压着一株尚有药性的黄精。",{item:"黄精",relation:["七玄门",1],progress:8}),
+          choice("抬起药篓直接进山门","守门人的刀鞘已经横过石阶。","你借乱势跨过门槛，却被刀鞘重重顶回；好在看清了门内换岗。",{hp:-7,clue:1}),
+          choice("先数脚印，再找真正撞翻药篓的人","湿泥上的鞋印只有一双沾着红砂。","你指出红砂来自炼锋堂，守门弟子的语气终于缓下来。",{clue:2,stones:1})),
+        event("a_han","背篓少年","肤色微黑的少年背着药篓从侧门回来，鞋底沾着只有深山才有的青苔。","韩立","借过。","神手谷外",
+          choice("让开路，顺手扶稳将倒的药篓","药香很淡，篓底却压得很实。","韩立点了一下头，没有多说；一包止血散留在石沿上。",{item:"止血散",relation:["韩立",1]}),
+          choice("当面叫出韩立的名字","你们此前从未正式见过。","少年脚步只停半息，目光从你手上扫到退路。",{relation:["韩立",-1],clue:1,attention:2}),
+          choice("记下他来路上的青苔和药味","那不是寻常采药人会走的路线。","你辨出北坡有一条少人知道的药径。",{clue:2,item:"北坡药径"})),
+        event("a_town","青牛镇夜市","铁匠铺后有人用碎银换一张发黄的药方，纸角画着七玄门的暗记。","卖方老汉","只卖今夜。","青牛镇",
+          choice("用铜钱换下药方残角","它可能只是治风寒的旧方。","残角记着一味罕见辅药，暂时还凑不齐整张丹方。",{item:"残缺药方",stones:-1}),
+          choice("跟着买家走进黑巷","巷口的灯被人提前掐灭。","你踩碎瓦片惊动对方，肩头挨了一棍，却听见“神手谷”三字。",{hp:-9,clue:2}),
+          choice("观察纸张与暗记，不急着买","药方上的墨比纸新，暗记却是真的。","你避开一场骗局，还记下了伪造暗记的手法。",{clue:2,stones:1}))
+      ],
+      "② 神手谷": [
+        event("a_mo","谷中药香","瘦弱医师放下药杵，咳声很轻。他看你的手腕，比看你的脸更久。","墨大夫","识字吗？","神手谷",
+          choice("按规矩答话，替他整理药柜","每个抽屉都有药名，也都有不同锁痕。","你学会三味药材，墨大夫给了你一碗温药。",{progress:18,item:"药材辨识札记",relation:["墨大夫",1]}),
+          choice("反问他为何先看你的经脉","他的笑意没有变，药杵却停了。","你没得到答案；离谷时，袖口多了一点无色药粉。",{hp:-5,clue:2,relation:["墨大夫",-1]}),
+          choice("闻药气，分辨药柜里不该出现的东西","养身药中混着几味伤神药材。","你把异常记在心里，没有让任何人看见。",{clue:3,attention:1})),
+        event("a_zhang","空着的竹榻","张铁的竹榻收得过分干净，床脚却留着被拖动的白痕。屋外有人刚扫过地。","药童","他被师父派出去了。","神手谷药庐",
+          choice("先替药童把当日杂活做完","多留半日，才能听见更多零碎话。","你从闲谈中得知张铁离开前没有带行李。",{clue:2,relation:["神手谷药童",1]}),
+          choice("撬开竹榻下那块松动木板","门外咳声比刚才近了。","木板下只有半枚指甲印；你合上时被木刺划伤。",{hp:-6,clue:3,attention:2}),
+          choice("比对拖痕、脚印和药渣","拖痕止于墙边，药渣却含镇静成分。","你确认“外出”这套说法经不起细看。",{clue:3})),
+        event("a_bowl","未喝完的药","墨大夫推来一只青瓷碗。药面没有热气，碗沿却留着刚擦过的水痕。","墨大夫","趁温喝。","神手谷内室",
+          choice("只抿一口，借袖口遮住剩下的药","药先甜后麻，舌根很快失去知觉。","你保住清醒，装作药力发作，听见屏风后有人挪动。",{hp:-3,clue:3}),
+          choice("把整碗药泼向灯火，撞窗离开","窗外是陡坡，谷口已有脚步声。","火光逼退来人半步，你滚下坡留下多处擦伤。",{hp:-15,attention:4,item:"青瓷碎片"}),
+          choice("借检查药色拖延，观察墨大夫的手","他拇指上沾着与碗底相同的细粉。","你没有喝药，并看清他提前备好的第二只药碗。",{clue:4,relation:["墨大夫",-1]}))
+      ],
+      "③ 江湖刀光": [
+        event("a_wolf","野狼帮火把","山门外一夜亮起数十支火把。箭头淬着黑色药液，风里有桐油味。","七玄门弟子","守住石阶！","七玄门前山",
+          choice("随众人搬石堵住狭口","最稳的位置也会最先吃箭。","石障挡下第一轮箭雨，你捡到一只尚未点燃的桐油瓶。",{hp:-4,item:"桐油瓶",relation:["七玄门",1]}),
+          choice("绕到火把队伍后方点燃草坡","风向一变，火也会先烧到你。","火线切断敌人退路，你被烟熏得睁不开眼。",{hp:-12,stones:2,attention:3}),
+          choice("数清号令来源与换阵节奏","真正指挥的人没有举火把。","你锁定后坡一名戴斗笠的头目。",{clue:3})),
+        event("a_letter","药庐遗信","药柜暗格里压着一封旧信，封蜡已经裂开。屋外的咳声这次没有再响。","旁白","纸上只有很淡的药味。","神手谷",
+          choice("先确认谷内无人，再拆开信封","有些真相会改变你对所有旧事的看法。","信中文字交代了墨大夫留下的部分安排，更多内容被药水抹去。",{item:"墨大夫遗信",clue:4}),
+          choice("带着信去找韩立当面对质","你不知道他此刻愿意承认多少。","韩立只收走一张夹页，留下一句“这事别再问”。",{relation:["韩立",1],attention:2}),
+          choice("对光检查封蜡与纸层","信封曾被拆开后重新粘合。","夹层里藏着一行坐标，指向谷外乱葬坡。",{clue:4,item:"乱葬坡坐标"})),
+        event("a_pass","升仙令影子","一名江湖人临死前攥着半块金属令牌，追来的人穿着凡俗衣物，步法却没有声音。","蒙面人","把东西留下。","彩霞山旧道",
+          choice("拖着伤者退入乱石坡","令牌会把追兵也带进来。","伤者没撑过一炷香，你得到半块无字令牌。",{item:"半块无字令牌",hp:-5}),
+          choice("举令牌引开追兵，赌山路熟悉","身后脚步比你预想得快。","你甩掉两人，肩后却中了一枚袖箭。",{hp:-18,attention:4,clue:2}),
+          choice("藏在高处，看谁最终取走令牌","等待意味着放弃眼前所有权。","你记下蒙面人与一名修仙者的交易手势。",{clue:4}))
+      ],
+      "④ 踏上仙路": [
+        event("a_market","雾中坊市","山坳里的雾被一层禁制拦住。摊位上摆着符纸、灵药和你买不起的法器。","摊主","灵石说话。","太南小会外围",
+          choice("卖掉一路积攒的普通药材","第一笔灵石不多，却足以换一本入门口诀。","你换到两块灵石和一册《引气诀》。",{stones:2,item:"《引气诀》",progress:20}),
+          choice("押上全部灵石买一只蒙尘小炉","炉底有裂，边缘却留着丹火痕。","小炉能用，但你当场欠下摊主三块灵石。",{stones:-3,item:"旧炼丹炉",attention:2}),
+          choice("先走三圈，只记价格与摊主关系","最便宜的东西常常有最贵的后果。","你找出一名愿用凡间药材换灵石的老散修。",{clue:3,stones:1})),
+        event("a_root","测灵石发亮","灰白石柱在你掌下浮出数道细光。周围的交谈声短暂停了一瞬。","测灵修士","资质已定。","散修会馆",
+          choice("收回手，按最低价登记散修身份","低调意味着少资源，也少几双眼睛。","你领到一张临时身份符。",{item:"散修身份符",progress:18}),
+          choice("要求当众再测一次","若是天灵根，这一刻会被所有势力记住。","第二次光芒更盛，已有两名执事记下你的脸。",{progress:35,attention:6}),
+          choice("检查石柱底部的阵纹","测灵石也可能被人动手脚。","你发现阵纹会把稀有灵根的结果传向后室。",{clue:4})),
+        event("a_firstqi","第一缕气","夜里的引气口诀运到第三遍，丹田终于传来一丝针尖般的暖意。窗外有人踩过枯叶。","旁白","那脚步停在门外。","无名客栈",
+          choice("守住呼吸，把这一轮周天走完","门外的人可能只是在等你乱。","气感没有散，你的修为向前推进一截。",{progress:42}),
+          choice("骤然开门，用符火照向走廊","手里只有一张劣质火符。","符火烧亮一张陌生的脸，也烧掉你半片袖口。",{hp:-8,clue:2,attention:3}),
+          choice("停止运功，借窗纸上的影子辨人数","脚步只有一人，影子却有两道。","你提前从后窗离开，保住身上东西。",{clue:3,item:"未用火符"}))
+      ],
+      "⑤ 自由延续": []
+    },
+    B: {
+      "① 落脚": [
+        event("b_gate","黄枫谷名册","执事把一叠玉牌推过长桌，最底下那块有一道新裂纹。","外门执事","领牌，去药园。","黄枫谷外门",
+          choice("领下玉牌，先把药园差事做完","月例少，规矩却写得很清楚。","你得到本月两块灵石，也摸清药园换班。",{stones:2,relation:["黄枫谷",1]}),
+          choice("当场要求换去藏经阁","执事身后站着两名戒律弟子。","你被扣掉一块月例，却听见血色禁地名额将定。",{stones:-1,clue:2,attention:2}),
+          choice("检查裂纹是否影响身份禁制","裂纹像是有人故意从内侧切开。","这块玉牌曾被另一名弟子使用过。",{clue:3,item:"有裂纹的玉牌"})),
+        event("b_han","药园同门","一名相貌平平的弟子交回药锄，袖口没有泥，靴底却沾着坊市才有的银砂。","韩立","轮到你了。","百药园",
+          choice("接过药锄，只问今日要浇哪片田","少问一句，关系反而容易留下余地。","韩立告诉你东角三株药不能多浇。",{relation:["韩立",1],item:"百药园口诀"}),
+          choice("点破他刚从坊市回来","银砂只是线索，不是证据。","韩立神色没变，之后三日都没有再与你单独说话。",{relation:["韩立",-2],attention:2}),
+          choice("观察药锄磨损与药田缺口","有人取走了成熟药材，又补种得十分整齐。","你只确定韩立懂药远超普通同门。",{clue:3})),
+        event("b_li","结丹威压","远处剑光落在主峰，整片药叶同时伏低。一名沉稳修士从云上走过。","老弟子","李师祖回山了。","黄枫谷主峰外",
+          choice("低头让路，记住结丹修士的气息","规矩能保命，也能让你看清差距。","你第一次明确感到结丹境的压迫。",{progress:12,relation:["黄枫谷",1]}),
+          choice("追到议事殿外打听禁地名额","靠得越近，越容易被当成探子。","你被护殿禁制弹开，却听到“七派会盟”。",{hp:-8,clue:3,attention:2}),
+          choice("从剑光落点判断来路","剑上沾着越国南境的红尘土。","你确认边境已经出现异常调动。",{clue:4}))
+      ],
+      "② 血色禁地": [
+        event("b_quota","试炼名额","石台上只摆着三十枚入禁令，台下的人却超过一百。有人已在暗中抬价。","管事","生死自负。","黄枫谷演武坪",
+          choice("用宗门功绩正常争取名额","稳妥的路需要先完成一项采药任务。","你拿到候补资格与一张粗略地图。",{item:"禁地粗图",relation:["黄枫谷",1]}),
+          choice("把全部灵石压给掌册弟子","买到的名额也会留下买卖记录。","你得到入禁令，却被另一名候补盯上。",{stones:-4,item:"入禁令",attention:4}),
+          choice("查往届伤亡与活着回来的人","死亡名单比奖励名册长得多。","你标出三处死亡异常集中的区域。",{clue:4,item:"禁地避险标记"})),
+        event("b_herb","紫猴花","岩缝里开着筑基丹所需的紫猴花，花瓣无风自颤。泥下有鳞片缓慢摩擦。","同门","一起取，平分。","血色禁地石谷",
+          choice("先布驱蛇粉，再分两侧采花","药粉会惊动守护妖兽，却能争到半息。","你取到一株紫猴花，同门手臂被鳞尾擦伤。",{item:"紫猴花",relation:["临时同伴",1],hp:-3}),
+          choice("趁同门吸引妖兽，直取根茎","动作够快能多得一株，也会结下死仇。","你抢到完整根茎，背后随即传来法器破风声。",{item:"紫猴花根茎",hp:-14,relation:["临时同伴",-3],attention:3}),
+          choice("伏地听鳞片移动，找它的盲区","妖兽每次转身都避开左后方。","你找到安全采摘角度，还看见更深处的兽穴。",{clue:3,item:"紫猴花"})),
+        event("b_nangong","月白衣影","密林上方月轮一闪，追来的妖兽被切成两段。清冷女子落地时先看你的手，再看四周。","南宫婉","你从哪来？","血色禁地密林",
+          choice("如实报出身份，只说亲眼所见","少一句花言巧语，可能多一分可信。","她没有收你的谢礼，只提醒前方有禁制。",{relation:["南宫婉",1],clue:2}),
+          choice("借机提出同行，隐去自己所得灵药","她不喜欢手段，更不缺一个累赘。","月轮贴地划过，削断你脚边一截树根。",{relation:["南宫婉",-2],attention:2}),
+          choice("查看妖兽伤口与月轮来向","她刚经历过比这更激烈的斗法。","你判断附近还有一处尚未平息的古禁制。",{clue:4})),
+        event("b_exit","禁地出口","传送光柱开始不稳，身后追兵越来越近。怀里的灵药盒正散出遮不住的香气。","敌派弟子","留下药，放你走。","血色禁地出口",
+          choice("交出次要药材，保住筑基主药","对方未必知道你藏了几层药盒。","你用两株普通灵药换到最后一段路。",{itemRemove:"黄精",attention:-1}),
+          choice("引爆废符冲进传送光柱","光柱边缘足以撕裂护体灵光。","你带着药盒冲出禁地，落地时经脉受创。",{hp:-20,progress:24,item:"筑基主药盒"}),
+          choice("把药香引向另一条岔路","追兵只会给你一次骗过他们的机会。","你用空药盒带走脚步声，赶在光柱收拢前离开。",{clue:3,item:"筑基主药盒"}))
+      ],
+      "③ 坊市岁月": [
+        event("b_slip","蒙尘玉简","地摊角落压着一枚断玉简，摊主把它当作镇纸。断口处偶尔闪过丹纹。","摊主","三块灵石，不讲价。","黄枫谷坊市",
+          choice("按价买下，不显露兴趣","三块灵石可能换来一堆废字。","玉简里剩下半张炼气丹方。",{stones:-3,item:"半张炼气丹方"}),
+          choice("当场注入灵力强读玉简","断裂神识禁制可能反噬。","一段丹诀冲进识海，你鼻下立刻见血。",{hp:-12,item:"残缺丹诀",progress:18}),
+          choice("先问玉简来自哪个洞府","来路往往比货物本身更值钱。","摊主漏出一个已废弃炼丹室的位置。",{clue:4,item:"废丹室位置"})),
+        event("b_auction","筑基丹落槌","玉瓶刚被揭开，满场呼吸都重了一分。你的灵石连起拍价零头都不够。","拍卖师","一千二百灵石。","越京拍卖场",
+          choice("只记竞价者与出场顺序","买不起丹，也能看清谁最缺丹。","你记下两家急售灵药的修仙家族。",{clue:4,stones:1}),
+          choice("用假传音搅乱最后一轮竞价","一旦查到你，拍卖场不会讲情面。","竞价短暂停顿，你趁乱捡到一枚遗落的中阶符。",{item:"中阶遁地符",attention:6}),
+          choice("观察玉瓶封口与丹香","真丹也可能被做过手脚。","你发现这枚筑基丹药力已有轻微流失。",{clue:3})),
+        event("b_backhill","后山邀斗","同门把切磋地点定在无人后山，石台边缘新埋了四枚阵旗。","同门修士","只分胜负。","黄枫谷后山",
+          choice("要求移到执事可见的演武坪","对方可以拒绝，至少不能悄悄灭口。","切磋最终取消，你记住阵旗上的家族纹。",{clue:2,relation:["黄枫谷",1]}),
+          choice("假意入阵，先毁最弱那枚阵旗","阵法一旦发动，你只有数息。","阵角崩开，你夺下一枚阵旗，也挨了一记火弹。",{hp:-16,item:"残阵旗",attention:3}),
+          choice("绕山一圈，找出埋伏者与退路","邀斗的人不止一个。","你从崖后离开，并留下了一张他们看不懂的假脚印。",{clue:4}))
+      ],
+      "④ 正魔风云": [
+        event("b_border","南境传音","三张传音符先后飞入议事殿，第二张符纸边缘带血。山门大阵当夜加了一层。","李化元","弟子不得私自离谷。","黄枫谷议事殿外",
+          choice("按命令清点药材与撤离路线","大战真正来临时，药比口号更有用。","你发现后山备用传送阵只够少数人先走。",{clue:3,relation:["李化元",1]}),
+          choice("连夜越过禁令去南境探查","魔道斥候不会因为你低阶而放过你。","你看到六宗旗号，也被一缕神识扫过。",{hp:-18,clue:5,attention:5}),
+          choice("核对三张传音符的时间差","第二张符走的是灵兽山方向。","你发现灵兽山的反应比其他六派慢得异常。",{clue:5})),
+        event("b_linghu","老祖棋局","元婴威压笼住大殿，令狐老祖只问撤走多少核心弟子。殿外名单被风吹起一角。","令狐老祖","宗门要先活。","黄枫谷主峰",
+          choice("守在名单外，先执行分到的任务","你可能永远进不了被优先保护的那一列。","你领到一份护送低阶弟子的差事。",{relation:["黄枫谷",2],item:"护送令"}),
+          choice("闯入殿内质问弃守安排","元婴修士面前，勇气不等于资格。","你被威压压跪，骨节作响，却听清真正撤离时辰。",{hp:-22,clue:4,attention:4}),
+          choice("偷看被风掀起的名单背面","正面是撤离者，背面是断后位置。","你的名字暂时不在任何一面。",{clue:4})),
+        event("b_retreat","山门钟裂","警钟第三次响起时裂开一道缝。远处已有魔道法器的黑光压过山脊。","执事","一炷香后封阵！","黄枫谷山门",
+          choice("带着分配给你的队伍按北线撤离","北线更慢，却还有凡人村镇需要带走。","你护住大半队伍，最后一人没有赶上封阵。",{relation:["黄枫谷",2],hp:-7}),
+          choice("放弃队伍，抢先冲向备用传送阵","那里不会给外门弟子留位置。","你抢到阵边才发现灵石槽已被抽空。",{hp:-15,relation:["黄枫谷",-3],attention:4}),
+          choice("先确认钟声与令牌是否一致","有人正在用假钟声诱使弟子离开防线。","你识破假令，避免队伍撞进伏击。",{clue:5,relation:["李化元",1]}))
+      ],
+      "⑤ 自由延续": []
+    },
+    C: {
+      "① 落脚": [
+        event("c_dock","海岛落脚","渡口石碑写着洞府租金，最便宜的一处也要十块灵石。海风里混着妖兽血腥。","岛吏","没灵石就睡船底。","魁星岛渡口",
+          choice("先接抄录海图的短工","赚得慢，至少能看见各岛航路。","你得到三块灵石和一张旧海图。",{stones:3,item:"乱星海旧图"}),
+          choice("押上家当租海崖废洞府","便宜是因为上一任租客失踪。","洞府里留着一面破阵盘，也留着未散妖气。",{stones:-5,item:"破阵盘",attention:2}),
+          choice("观察岛吏把谁放过不收租","真正的规矩常写在碑外。","你认出星宫、妙音门与本地岛主的不同腰牌。",{clue:4})),
+        event("c_ziling","妙音门舟","紫纱轻舟靠岸时，渡口嘈杂声低了半截。船上女子戴着面纱，追踪她的神识却不止一道。","妙音门弟子","让路。","魁星岛内港",
+          choice("退到一旁，替船队挡开拥挤散修","示好太明显，也会被暗处的人记住。","你得到一枚妙音门临时通行符。",{item:"妙音门通行符",relation:["紫灵",1],attention:1}),
+          choice("趁乱登舟询问雇佣任务","船上禁制已亮起淡紫光。","你被禁制掀回码头，储物袋差点落海。",{hp:-11,attention:3}),
+          choice("找出追踪神识来自哪几处楼阁","看美人容易，看清猎人更难。","你锁定万法门与两名身份不明的结丹修士。",{clue:5})),
+        event("c_jinqing","结伴邀约","金青把一张猎妖契约压在桌上，报酬比市价高三成。契约末尾少了一行担保。","金青","敢出海吗？","魁星岛酒肆",
+          choice("补齐分成与退路条款再签","钱少一点，命能多一层保障。","金青接受改动，你拿到预付灵石。",{stones:2,relation:["金青",1],item:"猎妖契约"}),
+          choice("要求独得妖丹，主动担任诱饵","海妖不会按契约只咬一口。","对方同意得太快，你已被写进诱饵位置。",{stones:3,attention:3}),
+          choice("查金青过去三次任务的幸存者","高报酬背后一定有数字。","三次任务都有一名陌生修士临时加入。",{clue:4}))
+      ],
+      "② 星海风云": [
+        event("c_hunt","雾海妖影","海雾中浮起一排青色脊鳍，船底被撞得向左倾斜。备用小舟只有一艘。","金青","守阵眼！","外星海航路",
+          choice("稳住阵眼，让船先脱离妖群","阵眼一破，所有人都要落海。","船冲出雾带，你分到两块妖兽鳞片。",{hp:-6,item:"青鳞妖兽鳞片",relation:["金青",1]}),
+          choice("跃上桅杆直取领头妖兽","海面没有借力处，失手就会被拖下去。","你重创领头妖兽，也被尾鳍拍裂护身符。",{hp:-19,item:"低阶妖丹",stones:4}),
+          choice("用海图比对雾流，寻找妖群缺口","脊鳍都在逆着一股暗流移动。","你指明右舷缺口，保住大半灵力。",{clue:4,relation:["同行散修",1]})),
+        event("c_tax","星宫巡船","白色巡船横在航道中央，执事要求检查每只储物袋。远处另有黑帆船静静看着。","星宫执事","例行查验。","天星城外海",
+          choice("按规矩缴纳航税，只展示登记货物","多花灵石，少留把柄。","你得到一枚当月通航印。",{stones:-2,item:"星宫通航印"}),
+          choice("用幻符藏起妖丹，强行过检","巡船阵法专门照破低阶幻术。","妖丹被扣，你也被记进复查名册。",{itemRemove:"低阶妖丹",attention:5}),
+          choice("观察黑帆船与巡船的旗语","双方表面敌对，旗语却完成一次短促交换。","你发现本地执事与逆星盟有人私下交易。",{clue:5})),
+        event("c_invite","逆星盟密帖","洞府门缝里插着一张黑帖，纸上没有字，贴近灵火才浮出邀请。","黑帖","今夜子时。","魁星岛洞府",
+          choice("带着黑帖去公开坊市鉴定","公开处理能降低被灭口的价值。","鉴定师确认这是外围招揽帖。",{clue:3,attention:-1}),
+          choice("按帖赴约，独自进入海蚀洞","入口处已经布下隔绝神识的阵法。","你见到一名逆星盟联络人，也交出一缕气息作保。",{stones:4,attention:6,relation:["逆星盟",1]}),
+          choice("用另一团灵火测试隐藏层","帖中还有一行只给被监视者看的警告。","你得知星宫已掌握这处分舵。",{clue:5,item:"烧毁的黑帖"}))
+      ],
+      "③ 虚天殿前奏": [
+        event("c_map","虚天残图","拍卖台上展开一角古图，海水纹路与现今航线完全不同。几名元婴随从同时起身。","拍卖师","不保真伪。","天星城拍卖楼",
+          choice("与人合资买下拓印本","拓印可能故意漏掉最关键的一笔。","你得到残图副本，欠下一名散修人情。",{stones:-4,item:"虚天残图拓本",relation:["散修盟友",1]}),
+          choice("趁交割混乱抢走原图匣","元婴修士的东西，没有真正无人看守。","你只摸到图匣便被神识震伤。",{hp:-28,attention:7,clue:2}),
+          choice("比较古图水纹与三百年前海志","图上标的不是入口，而是潮汐禁制。","你推算出开启前会出现一次灵潮。",{clue:6})),
+        event("c_xuangu","落魄老修","阴沉老者在路边卖一枚骨白令符，修为气息只有练气期，影子却比身形慢半拍。","老修","换一瓶补气丹。","天星城偏巷",
+          choice("按市价交易，不追问来路","便宜的令符也可能附着追踪气息。","你换到一枚无名骨符，暂未催动。",{stones:-2,item:"无名骨符",attention:2}),
+          choice("试探他的真实修为","有些伪装只等别人主动撞上去。","一股阴冷神识擦过识海，你忘了自己如何走出偏巷。",{hp:-24,clue:3,attention:6}),
+          choice("只看影子与脚印，不接触骨符","影子的异样无法用低阶功法解释。","你把老修的面貌和气息记进最危险名单。",{clue:6})),
+        event("c_spider","血色蛛丝","黑市密室里封着一截赤红蛛丝，卖家声称它来自虚天殿旧址。蛛丝靠近储物袋便自行绷紧。","卖家","识货就出价。","天星城黑市",
+          choice("买下一小截用于辨认","线索不等于钥匙，却能让你认出真正目标。","你得到一截血玉蛛丝样本。",{stones:-3,item:"血玉蛛丝样本",clue:3}),
+          choice("跟踪卖家去取货源","黑市出口后的第三条巷子没有灯。","你看见货源被送进极阴岛修士的院落。",{hp:-8,clue:6,attention:3}),
+          choice("用残图禁制反应测试蛛丝","蛛丝在图上某一点骤然发热。","两件线索互相印证，指向虚天鼎所在的内殿。",{clue:6}))
+      ],
+      "④ 虚天殿": [
+        event("c_open","虚天门开","海面升起一座白石巨殿，殿门周围的空间一层层折叠。元婴威压让低阶修士无法抬头。","殿门古文","三百年一开。","虚天殿外海",
+          choice("先检查自身境界与退路，再决定是否入殿","结丹以下踏进空间裂缝，连尸骨都留不下。","你保住判断；若境界不足，便转向外围遗落禁制。",{clue:3,gate:"virtual"}),
+          choice("趁元婴老怪牵制时直冲殿门","机缘近在眼前，境界差距也写在门上。","空间重压碾碎护体灵光，你被甩回海面。",{hp:-32,attention:6,gate:"virtual"}),
+          choice("观察各方进入顺序与彼此避让","真正的敌友关系藏在谁给谁让路。","你记下极阴、蛮胡子与万天明的站位。",{clue:6,gate:"virtual"})),
+        event("c_icefire","冰火道","一边寒气凝骨，一边火浪卷顶。石桥中央躺着半具古修遗骨，手中还扣着储物环。","同行者","别碰。","虚天殿冰火道",
+          choice("沿前人留下的浅脚印慢行","脚印也可能故意引向旧禁制。","你避开大半冷热浪，损失少量护体灵力。",{hp:-7,progress:16}),
+          choice("顶着火浪夺取遗骨储物环","环上古禁制尚未完全熄灭。","你拿到储物环，右手却被寒毒侵入。",{hp:-24,item:"古修储物环",attention:3}),
+          choice("用冷热交界处的雾气判断阵眼","每七息，雾线会向同一块砖回卷。","你找到阵法短暂平衡点。",{clue:6})),
+        event("c_ding","鼎下蛛影","巨鼎悬在内殿深处，两只血玉蜘蛛被数道法诀逼向石台。殿顶已有冰屑不断落下。","极阴祖师","动手。","虚天殿内殿",
+          choice("守住自己的退路，不争第一下","老怪争鼎时，活着离开本身就是收获。","你在坍塌前取得一块古宝残片。",{item:"古宝残片",hp:-8}),
+          choice("把全部底牌押在鼎身松动的一瞬","元婴老怪的余波足以杀死结丹修士。","你触及鼎沿，也被巨力掀飞撞上石柱。",{hp:-38,item:"虚天鼎气息",attention:8}),
+          choice("盯住玄骨与极阴之间的细微错位","师徒旧账比夺宝表面更危险。","你提前避开一次针对极阴的暗手。",{clue:8,item:"玄骨暗手线索"})),
+        event("c_silver","银狼回眸","坍塌石门后，一道银影从古宝碎光里抬头。她没有靠近，先看向你身后的出口。","银色兽影","你能出去？","虚天殿侧殿",
+          choice("先打开一条退路，再示意她跟上","信任不会因一句话凭空出现。","银影保持三丈距离，仍随你穿过侧门。",{relation:["银月",1],item:"银色古符"}),
+          choice("用困灵符强行收服","来历不明的灵兽也可能有完整神智。","困灵符被银光撕开，你的神识遭到反震。",{hp:-20,relation:["银月",-3],attention:3}),
+          choice("观察她为何避开某块古镜","古镜中映出的不是银狼外形。","你只记下一瞬人影，没有追问。",{clue:6,relation:["银月",1]}))
+      ],
+      "⑤ 自由延续": []
+    }
+  };
+
+  const RANDOM_EVENTS = [
+    event("r_stall","地摊玉简","旧布上压着一枚缺角玉简，摊主正在和旁人争一块灵石。","摊主","看中就拿。","坊市",
+      choice("按普通旧物价格买下","捡漏先要承担它真是废物。","玉简里留着一段采药路线。",{stones:-1,item:"旧采药玉简"}),
+      choice("趁争吵把玉简调包","被抓住后，坊市护卫不会听解释。","你得手半步便撞上禁制，赔出两块灵石。",{stones:-2,attention:3}),
+      choice("先辨材质与残余神识","玉简缺角处沾着深山矿粉。","你确认它来自一处古修洞府附近。",{clue:3})),
+    event("r_herb","悬崖灵药","崖缝里垂着一株叶脉泛光的灵草，旁边石洞有温热腥气吹出。","同行者","有守护兽。","荒山悬崖",
+      choice("布绳索，从侧面慢慢接近","绳索会留下退路，也会惊动洞里东西。","你取到半株灵草，及时退回崖顶。",{item:"半株年份灵草",hp:-3}),
+      choice("直接御器扑向灵药根部","最快的路正对石洞入口。","你拔出整株灵草，也被兽爪擦过后背。",{item:"完整年份灵草",hp:-18}),
+      choice("先投石测风，确认洞内体型","回声比洞口看上去更深。","你判断守护兽至少高你一个小境界。",{clue:3})),
+    event("r_fight","野外斗法","两名修士为一只药盒打到山石崩裂。药盒滚到你脚边，封口已经松开。","负伤修士","别动！","野外山道",
+      choice("把药盒踢回空地，退出斗法范围","放弃眼前利益能换来最清楚的退路。","两人没有追你，你捡到一张掉落护身符。",{item:"破损护身符"}),
+      choice("抓起药盒立刻遁走","两道神识同时锁住你的后背。","你带走药盒，也挨了一记飞针。",{hp:-22,item:"来路不明的药盒",attention:5}),
+      choice("观察谁一直避开药盒封口","盒里可能装着连争夺者都忌惮的东西。","你发现药香中混着腐甜气味。",{clue:4})),
+    event("r_formula","残缺丹方","雨后石缝里夹着半张防水兽皮，上面写着三味主药与一行被刮掉的火候。","旁白","兽皮仍有余温。","山谷雨地",
+      choice("收起兽皮，等找到炼丹师再补全","丹方不全，至少不会立刻毁药。","你得到一张残缺丹方。",{item:"残缺丹方"}),
+      choice("按现有内容立刻试炼一炉","少掉的火候可能正是成败关键。","药材化成黑灰，炉中却凝出一粒药渣。",{item:"异常药渣",hp:-5}),
+      choice("查兽皮刮痕与附近脚印","有人不想让后来者看见最后一行。","你从刮痕反推火候大致范围。",{clue:3,item:"补注丹方"})),
+    event("r_escape","追兵一炷香","三道陌生遁光从身后压来，最前一人比你高出一个大境界。前方分出水路、山洞和官道。","同行者","分开跑！","荒野岔路",
+      choice("借水路掩去气息，放弃部分行李","水下灵力运转更慢，却能断开神识片刻。","你丢下一件普通物品，摆脱最前追兵。",{hp:-6,attention:-3}),
+      choice("返身埋符，赌第一轮偷袭","境界差不会因胆子大而消失。","符阵只挡住数息，你被余波震伤后逃入山洞。",{hp:-24,attention:1,clue:2}),
+      choice("看遁光高低，判断追兵真正目标","三人始终偏向同行者所在一侧。","你确认自己只是顺带目标，选择相反山脊离开。",{clue:3,attention:-2})),
+    event("r_array","乱石传送阵","荒草下露出六块方位石，中央阵纹只剩一半仍在发亮。另一头没有任何气息返回。","旁白","灵石槽是空的。","荒山乱石堆",
+      choice("拓下阵纹，不立刻启动","保住线索，等有退路时再赌。","你得到古传送阵拓片。",{item:"古传送阵拓片",clue:2}),
+      choice("投入灵石强行启动","残阵最危险的不是不动，是只动一半。","阵光把你抛到数里外，储物袋少了一块灵石。",{stones:-1,hp:-12,attention:2}),
+      choice("逐块检查方位石的磨损","其中一块来自很远的海岛矿脉。","你判断传送阵另一端可能在乱星海。",{clue:4})),
+    event("r_sky","灵气异动","远山上空的云层向一点旋转，鸟兽成群逃离。赶去的人影已经超过十道。","路人修士","有宝物出世。","灵气异动之地",
+      choice("停在外围接应伤者换取消息","离中心远，收获也不会是最大的。","你用止血散换到一条可靠情报。",{clue:3,relation:["陌生散修",1]}),
+      choice("赶在所有人前冲入灵气中心","天象也可能是凶物苏醒。","第一波灵压把你推倒，你抢到一块灵矿。",{hp:-20,item:"异动灵矿",attention:4}),
+      choice("看鸟兽逃离方向与云层速度","真正危险的中心正在缓慢移动。","你避开正面，还标出它下一次停留位置。",{clue:4})),
+    event("r_task","护送灵药","一名炼丹师要把三只封灵匣送过山口，报酬预付一半。他不肯说匣中是哪种药。","炼丹师","只管送到。","坊市任务堂",
+      choice("签下标准契约，要求验封不验货","至少能确认匣中没有活物。","任务成立，你得到预付灵石。",{stones:2,item:"封灵匣契约"}),
+      choice("加价走危险近路","时间缩短一半，埋伏点也多一倍。","你赚到更多灵石，途中损失一张护身符。",{stones:4,hp:-10,attention:2}),
+      choice("查雇主与目的地的交易记录","过去三次护送都有人半路失踪。","你拒绝任务，并记下目的地是一处黑市。",{clue:4})),
+    event("r_pill","无名丹丸","破庙供桌下滚出一枚蜡封丹丸，丹香浓得不自然。蜡层上没有任何丹师印记。","旁白","鼠虫没有靠近。","山野破庙",
+      choice("封入玉盒，等找到可靠丹师","来路不明的丹药不必现在赌命。","你收好无名丹丸，没有服用。",{item:"无名丹丸"}),
+      choice("刮下一角当场服用","药力与毒性都会先从最小一口开始。","丹田短暂发热，随后胸口发闷。",{progress:26,hp:-14}),
+      choice("用银针、火烤与灵水分层试验","药香下藏着很淡的尸油味。","你确认这不是正经增进修为的丹药。",{clue:4})),
+    event("r_black","无人后山","同门或同道传来一张切磋帖，地点写在无人后山，落款故意少了最后一笔。","传帖人","今晚见。","后山小径",
+      choice("把帖子交给能作证的人再赴约","对方若真想切磋，不怕留下记录。","约斗者没有出现，你保住了主动。",{clue:2,attention:-1}),
+      choice("提前半个时辰埋伏反伏击","你不知道对方有几个人。","你撞破一座困阵，夺下一枚阵钉。",{hp:-16,item:"困阵阵钉",attention:3}),
+      choice("查纸、墨和送帖路线","墨里掺着本地家族独用的松脂。","你锁定一个可能的幕后家族。",{clue:4}))
+  ];
+
+  const IDENTITY_EVENTS = {
+    mortal: [
+      ["灵根初醒","你照着残缺口诀吐纳，丹田第一次留下没有立刻散去的暖意。","把周天稳稳走完","强行冲开经脉","先记下气感出现的时辰"],
+      ["求师无门","一名散修愿教你入门，却要你替他守三年药田。","先问清三年契约","当场拜师赌一次","查他上一名弟子的去向"],
+      ["第一块灵石","药铺愿用一块灵石收走你采到的整篓药材。","按市价完成交易","临时抬价赌掌柜急用","先比较三家铺子的秤"],
+      ["自己的节奏","你终于能稳定完成一次小周天，窗外天色已经全黑。","停下巩固气息","再冲一轮追求突破","检查经脉是否有暗伤"],
+      ["凡与仙之间","凡间还有熟人等你回去，修仙路却已不再容得下半心半意。","先安置凡间旧事","斩断旧路直接远行","给自己七日观察两边变化"]
+    ],
+    rogue: [
+      ["散修落脚","一间漏雨洞府与一个拥挤坊市，你只能先选一处。","先租最便宜洞府","夜闯废弃灵脉","查坊市里谁在收新人"],
+      ["第一单生意","护送、采药、猎妖三张任务帖同时贴出。","接报酬清楚的护送","接最危险的猎妖","先查三名雇主"],
+      ["险中求财","黑市有人低价出一批来路不明的灵药。","只买能验明的部分","押上全部灵石吃下整批","跟着卖家找货源"],
+      ["名字传开","酒肆里有人把你做过的事夸大了三倍。","纠正关键事实","借势接更大的任务","听听是谁最先传开"],
+      ["独行或入势","两方势力同时递来令牌，一边稳定，一边自由。","先谈短期合作","同时收下两块令牌","查清双方真正缺什么人"]
+    ],
+    sect: [
+      ["外门杂务","今日杂务与传法时辰撞在一起，迟一边都要扣月例。","先完成宗门差事","逃掉杂务去听传法","找出排班为何临时更改"],
+      ["宗门立功","执事把一项危险采药任务交给你们三人。","按队伍分工完成","独自抢先取主药","先查任务地旧记录"],
+      ["内门门槛","长老只收一名弟子，台下已有三人送过礼。","凭功绩正常应选","押上资源当场挑战","观察长老真正看重什么"],
+      ["派系暗线","两名师叔分别要求你传递互相矛盾的口信。","只传原话不添字","利用口信向两边要价","先确认谁有权下令"],
+      ["宗门与退路","撤离名单将定，你的位置仍是一片空白。","守好分到的职责","先替自己抢一条退路","查名单由谁最后落笔"]
+    ],
+    clan: [
+      ["家族差事","族中要你把一只封盒送到邻族，盒上禁制不许开启。","按约送到并留凭据","半路打开封盒","查两族最近为何往来"],
+      ["资源分配","本月丹药少了两瓶，账册却写着足额入库。","按份额领取自己的","闯库房查个明白","先核对守库与领药记录"],
+      ["脱离庇护","族长允许你外出一年，但不会再补灵石。","带足基础物资再走","只带法器立刻出门","先找族外可靠落脚点"],
+      ["家族危机","仇家送来联姻帖，门外同时站着讨债修士。","先处理最急的债务","撕掉联姻帖当众拒绝","查危机是否来自族内"],
+      ["护族或自保","祖宅阵法只能再撑一夜，密道一次走不了所有人。","先送走老弱与典籍","抢先带自己的资源离开","核对敌人真正要的东西"]
+    ]
+  };
+
+  const MAJOR_EVENT_IDS = {
+    A:{10:"a_bowl",20:"a_pass"},
+    B:{10:"b_nangong",20:"b_linghu"},
+    C:{10:"c_invite",20:"c_spider",30:"c_silver"}
+  };
+
+  let draft = {step:"intro", time:null, identity:null, root:null, name:""};
+  let state = null;
+  let modalMode = null;
+
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  }
+
+  function loadSaved() {
+    try {
+      const saved=JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      if (!saved) return null;
+      if (saved.lifeLoss == null) saved.lifeLoss=0;
+      if (saved.lifespanBonus == null) saved.lifespanBonus=0;
+      if (saved.rank > 26) saved.rank=26;
+      return saved;
+    } catch (_) { return null; }
+  }
+
+  function saveState() {
+    if (!state) return;
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      localStorage.setItem(LAST_NAME_KEY, state.name);
+    } catch (_) {}
+  }
+
+  function clearSave() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (_) {}
+  }
+
+  function phaseFor(time, turn) {
+    const row = TIMEPOINTS[time].schedule.find(x => turn >= x[0] && turn <= x[1]);
+    return row ? row[2] : "⑤ 自由延续";
+  }
+
+  function realmLabel(rank) {
+    if (rank <= 0) return "凡人";
+    if (rank <= 13) return `练气${rank}层/13`;
+    const stages = ["初期","中期","后期"];
+    if (rank <= 16) return `筑基${stages[rank-14]}`;
+    if (rank <= 19) return `结丹${stages[rank-17]}`;
+    if (rank <= 22) return `元婴${stages[rank-20]}`;
+    if (rank <= 25) return `化神${stages[rank-23]}`;
+    return "化神大圆满";
+  }
+
+  function lifeLimit(rank) {
+    let base=2200;
+    if (rank <= 0) base=82;
+    else if (rank <= 13) base=120;
+    else if (rank <= 16) base=230;
+    else if (rank <= 19) base=550;
+    else if (rank <= 22) base=1100;
+    return base+(state?.lifespanBonus||0);
+  }
+
+  function lifeBand(rank) {
+    if (rank <= 0) return "凡人寿数，因体质与病伤而异";
+    if (rank <= 13) return "一百余岁";
+    if (rank <= 16) return "二百余岁";
+    if (rank <= 19) return "五百余岁";
+    if (rank <= 22) return "一千余岁";
+    return "两千余岁";
+  }
+
+  function remainingLife() {
+    return Math.max(0, Math.floor(lifeLimit(state.rank) - state.age - (state.lifeLoss || 0)));
+  }
+
+  function formatAge(value) {
+    return Number.isInteger(value) ? String(value) : Number(value).toFixed(1).replace(/\.0$/,"");
+  }
+
+  function breakthroughYears(oldRank) {
+    let base=0;
+    if (oldRank < 13) base=1.5;
+    else if (oldRank === 13) base=2;
+    else if (oldRank <= 15) base=20;
+    else if (oldRank === 16) base=50;
+    else if (oldRank <= 18) base=25;
+    else if (oldRank === 19) base=45;
+    else if (oldRank <= 21) base=120;
+    else if (oldRank === 22) base=250;
+    else if (oldRank <= 24) base=180;
+    else base=220;
+    const factor=ROOTS[state.root]?.timeFactor || 1;
+    return Math.max(.5,Math.round(base*factor*10)/10);
+  }
+
+  function startingAge(baseAge,rank,rootKey) {
+    const factor=ROOTS[rootKey]?.timeFactor||1;
+    if (rank <= 9) return baseAge;
+    if (rank <= 13) return Math.max(baseAge,Math.round((18+(rank-9)*4)*factor));
+    const foundationBase=38+(rank-14)*18;
+    return Math.max(baseAge,Math.round(foundationBase*factor));
+  }
+
+  function conditionLabel() {
+    if (state.hp <= 0) return "身死道消";
+    if (state.hp < 18) return "重伤";
+    if (state.hp < 38) return "带伤";
+    if (state.hp < 70) return "气血不稳";
+    return "无异常";
+  }
+
+  function seeded() {
+    state.seed = (state.seed * 1664525 + 1013904223) >>> 0;
+    return state.seed / 4294967296;
+  }
+
+  function addItem(name) {
+    if (!name || state.items.includes(name)) return;
+    state.items.push(name);
+    if (state.items.length > 20) state.items.shift();
+  }
+
+  function removeItem(name) {
+    const i = state.items.indexOf(name);
+    if (i >= 0) state.items.splice(i,1);
+  }
+
+  function addRelation(name, delta) {
+    state.relations[name] = (state.relations[name] || 0) + delta;
+  }
+
+  function canBreakRank() {
+    if (state.rank < 10) return true;
+    if (state.rank <= 13) return state.breakTokens > 0 || state.items.some(x => /筑基丹|机缘|主药盒/.test(x));
+    return false;
+  }
+
+  function canCrossMajorRealm() {
+    if (state.rank === 16) {
+      if (state.root === "heaven") return {ok:true,cost:0};
+      if (state.clues >= 12 || state.items.some(x=>/降尘丹|结丹机缘/.test(x))) return {ok:true,cost:8};
+      return {ok:false,message:"结丹瓶颈未破：天灵根可无瓶颈结丹，其他资质需要降尘丹、完整功法或足够机缘。"};
+    }
+    if (state.rank === 19) {
+      if (state.clues >= 20 || state.items.some(x=>/结婴丹|结婴机缘/.test(x))) return {ok:true,cost:12};
+      return {ok:false,message:"结婴条件不足：还需结婴机缘，并要面对原著中的心魔反噬。"};
+    }
+    if (state.rank === 22) {
+      if (state.clues >= 30 || state.items.some(x=>/化神机缘|魔元丹|元磁神光/.test(x))) return {ok:true,cost:20};
+      return {ok:false,message:"化神瓶颈未破：人界灵气稀薄，需要功法、丹药与大机缘共同推动。"};
+    }
+    return {ok:true,cost:0};
+  }
+
+  function advanceRealm(force=false) {
+    if (!force && !canBreakRank()) {
+      state.progress = 99;
+      return "瓶颈压住了最后一线修为，需要丹药或机缘。";
+    }
+    if (state.rank >= 26) { state.progress = 99; return "你已至化神大圆满；下一步不是继续堆修为，而是寻找飞升灵界的通道。"; }
+    const old = state.rank;
+    if (state.breakTokens > 0 && old >= 10) state.breakTokens--;
+    state.rank++;
+    state.progress = 0;
+    const years=breakthroughYears(old);
+    state.age=Math.round((state.age+years)*10)/10;
+    if (old === 13) { state.maxHp += 12; state.hp = Math.min(state.maxHp,state.hp+20); }
+    if (old === 16) { state.maxHp += 18; state.hp = Math.min(state.maxHp,state.hp+28); }
+    if (old === 19) { state.maxHp += 24; state.hp = Math.min(state.maxHp,state.hp+36); }
+    if (old === 22) { state.maxHp += 30; state.hp = Math.min(state.maxHp,state.hp+45); }
+    return `闭关${formatAge(years)}年后，境界突破：${realmLabel(old)} → ${realmLabel(state.rank)}。`;
+  }
+
+  function addProgress(amount) {
+    if (!amount) return "";
+    if (state.rank >= 14) {
+      state.progress = Math.min(99, state.progress + Math.round(amount * .55));
+      return state.progress >= 99 ? "高阶瓶颈已至，下一步必须靠大事件与破境机缘。" : "修为有所积累。";
+    }
+    state.progress += amount;
+    let note = "修为有所推进。";
+    while (state.progress >= 100) {
+      state.progress -= 100;
+      note = advanceRealm(false);
+      if (state.progress === 99) break;
+    }
+    return note;
+  }
+
+  function applyEffect(effect, risky=false) {
+    const notes = [];
+    let e = effect || {};
+    if (risky) {
+      const risk = Math.max(8, (e.risk ?? 32) + ROOTS[state.root].attention + Math.floor(state.attention/3));
+      if (seeded()*100 < risk) {
+        const damage = e.failDamage ?? (10 + Math.floor(seeded()*15));
+        state.hp -= damage;
+        notes.push(`代价：气血 -${damage}。`);
+      }
+      if (state.rank >= 23) {
+        const loss=2+Math.floor(seeded()*5);
+        state.lifeLoss=(state.lifeLoss||0)+loss;
+        notes.push(`化神修士在人界强行动用天地灵力，精元受损，寿元折损约${loss}年。`);
+      }
+    }
+    if (e.hp) { state.hp = Math.min(state.maxHp, state.hp + e.hp); if (e.hp > 0) notes.push(`气血 +${e.hp}。`); }
+    if (e.stones) { const old=state.stones; state.stones=Math.max(0,state.stones+e.stones); notes.push(`灵石 ${old}→${state.stones}。`); }
+    if (e.progress) { const n=addProgress(e.progress); if (n) notes.push(n); }
+    if (e.item) { addItem(e.item); notes.push(`获得：${e.item}。`); }
+    if (e.itemRemove) { removeItem(e.itemRemove); notes.push(`失去：${e.itemRemove}。`); }
+    if (e.relation) { addRelation(e.relation[0],e.relation[1]); notes.push(`${e.relation[0]}关系 ${e.relation[1]>0?"+":""}${e.relation[1]}。`); }
+    if (e.clue) { state.clues += e.clue; notes.push(`线索 +${e.clue}。`); }
+    if (e.attention) { state.attention=Math.max(0,state.attention+e.attention); }
+    if (e.breakToken) { state.breakTokens += e.breakToken; notes.push("获得一次破瓶颈机缘。"); }
+    if (e.breakthrough) notes.push(advanceRealm(true));
+    if (e.gate === "virtual" && state.rank < 17) notes.push("你的境界不足结丹，无法进入虚天殿核心，只能在外围行动。");
+    return notes.join(" ");
+  }
+
+  function identityEvent(index) {
+    const data = IDENTITY_EVENTS[state.identity][index % 5];
+    const [title,narration,a,b,c] = data;
+    return event(`id_${state.identity}_${index}`, title, narration, "身份线", IDENTITIES[state.identity].name, state.location,
+      choice(a,"稳妥推进身份线，收益较小但风险可控。",`你选择“${a}”，身份线向前推进。`,{progress:18,relation:[IDENTITIES[state.identity].name+"同道",1]}),
+      choice(b,"可能得到更大收益，也可能直接受伤或结仇。",`你选择“${b}”，局面立刻变得更尖锐。`,{progress:28,stones:2,attention:3,risk:38,failDamage:16}),
+      choice(c,"暂缓眼前收益，换取更具体的信息与退路。",`你选择“${c}”，从细节里留下了一条后手。`,{clue:3}));
+  }
+
+  function currentEvent() {
+    const turn = state.turn;
+    if (state.time === "C" && turn >= 21 && turn <= 30 && state.rank < 17) {
+      const outer = RANDOM_EVENTS[(turn + 3) % RANDOM_EVENTS.length];
+      return {...outer, title:`虚天殿外围 · ${outer.title}`, location:"虚天殿外海"};
+    }
+    const majorId=MAJOR_EVENT_IDS[state.time]?.[turn];
+    if (majorId) {
+      for (const list of Object.values(EVENTS[state.time])) {
+        const found=list.find(x=>x.id===majorId);
+        if (found) return found;
+      }
+    }
+    if ([4,9,14,19,24].includes(turn)) return identityEvent([4,9,14,19,24].indexOf(turn));
+    if (turn > (state.time === "C" ? 30 : 28)) return RANDOM_EVENTS[(turn + state.seed) % RANDOM_EVENTS.length];
+    if (turn > 2 && turn % 3 === 0 && ![10,20,30].includes(turn)) return RANDOM_EVENTS[(turn + state.clues) % RANDOM_EVENTS.length];
+    const phase = phaseFor(state.time,turn);
+    const list = EVENTS[state.time][phase] || [];
+    if (!list.length) return RANDOM_EVENTS[turn % RANDOM_EVENTS.length];
+    const phaseStart = TIMEPOINTS[state.time].schedule.find(x=>x[2]===phase)?.[0] || 1;
+    return list[(turn-phaseStart) % list.length];
+  }
+
+  function briefText() {
+    const t = state.turn;
+    const pieces = state.time === "A"
+      ? ["天南：七派仍在各守山门","越国：江湖帮派争斗未止","乱星海：外海妖兽潮传闻渐多",`${state.location}：${phaseFor(state.time,t).replace(/^\S+\s/,"")}推进中`]
+      : state.time === "B"
+      ? ["天南：魔道六宗调动频繁","越国：七派开始互通传音","乱星海：虚天殿传闻尚远",`${state.location}：${phaseFor(state.time,t).replace(/^\S+\s/,"")}推进中`]
+      : ["天南：正魔旧局仍有余波","越国：散修迁徙增多","乱星海：星宫与逆星盟暗流加剧",`${state.location}：${phaseFor(state.time,t).replace(/^\S+\s/,"")}推进中`];
+    return `【人界简报】${pieces.join("｜")}`;
+  }
+
+  function initGame() {
+    const id = IDENTITIES[draft.identity];
+    let rank = id.rank + START_OFFSETS[draft.time][draft.identity];
+    if (draft.root === "heaven" && rank > 0) rank++;
+    rank = Math.min(16,rank);
+    const startAge=startingAge(id.age,rank,draft.root);
+    const place = TIMEPOINTS[draft.time].location;
+    state = {
+      version:1,
+      name:draft.name.trim(), time:draft.time, identity:draft.identity, root:draft.root,
+      age:startAge, rank, progress:0, stones:id.stones, hp:100, maxHp:100,
+      turn:1, location:place, phase:phaseFor(draft.time,1),
+      items:[id.item], pills:[], relations:{}, clues:0, attention:ROOTS[draft.root].attention,
+      breakTokens:0, history:[], outcome:"", seed:(Date.now() ^ draft.name.length*2654435761)>>>0,
+      lifeLoss:0, lifespanBonus:((draft.name.length*7)%16)-5,
+      ended:false, dead:false, freeOpen:false,
+      opening:`你摸到身上最值钱的东西——${id.item}。照着记忆试着引气入体，${rank>0?"丹田里仍有一丝若有若无的气感":"丹田空空如也"}。远处，${id.caller}正隔着山风喊你的名字。`
+    };
+    saveState();
+    renderGame();
+  }
+
+  function choosePath(kind) {
+    if (!state || state.dead) return;
+    const ev = currentEvent();
+    if (kind === "free") { state.freeOpen = true; renderGame(); return; }
+    const picked = ev[kind];
+    const risky = kind === "bold";
+    let details = applyEffect(picked.effect,risky);
+    if (state.turn % 10 === 0) {
+      if (state.rank >= 14 && state.progress >= 40) {
+        const gate=canCrossMajorRealm();
+        if (gate.ok) {
+          state.clues=Math.max(0,state.clues-gate.cost);
+          details += ` 名场面机缘：${advanceRealm(true)}`;
+        } else details += ` 名场面机缘已至，但${gate.message}`;
+      }
+      else details += ` 名场面机缘：${addProgress(25)}`;
+    }
+    if (state.turn % 3 === 0 && !picked.effect.item && !picked.effect.stones && !picked.effect.progress) {
+      state.stones += 1;
+      details += " 小机缘：灵石 +1。";
+    }
+    state.outcome = `${picked.result}${details?" "+details:""}`;
+    state.history.push(`第${state.turn}轮｜${ev.title}｜${picked.title}｜${state.outcome}`);
+    state.location = ev.location || state.location;
+    state.turn++;
+    state.phase = phaseFor(state.time,state.turn);
+    state.freeOpen = false;
+    if (remainingLife() <= 0) die("寿元走到尽头，最后一次吐纳没有再等来天亮。");
+    else if (state.hp <= 0) die("伤势超过肉身承受的极限，灵力在经脉里一点点熄灭。");
+    else { saveState(); renderGame(); }
+  }
+
+  function resolveFreeAction(text) {
+    const action = text.trim();
+    if (!action) return;
+    let result = "";
+    let details = "";
+    if (/飞升|空间节点|前往灵界/.test(action)) {
+      if (state.rank < 23) {
+        result="你连化神期都未踏入，界面之力足以瞬间碾碎肉身。飞升还不是现在能碰的事。";
+      } else if (state.clues < 40 && !state.items.some(x=>/空间节点|逆灵通道|飞升通道/.test(x))) {
+        state.clues+=4;
+        addItem("空间节点线索");
+        result="你没有贸然撞入虚空，只定位到一处疑似空间节点。原著里这条路连化神修士也可能陨落。";
+      } else {
+        const danger=state.rank>=26?.18:.46;
+        if (seeded() < danger) {
+          state.hp=0;
+          result="空间节点中的界力巨压与空间风暴同时袭来，护体灵光碎裂，肉身再无法维持。";
+        } else {
+          state.ascended=true;
+          result="空间风暴最终被甩在身后。陌生灵气灌入经脉——你离开人界，踏入灵界。";
+        }
+      }
+      state.lastFree="ascend"; state.repeatTrain=0;
+    } else if (/修炼|吐纳|闭关|引气/.test(action)) {
+      state.repeatTrain = (state.lastFree === "train" ? (state.repeatTrain||0)+1 : 1);
+      const decay = Math.max(.35, 1 - (state.repeatTrain-1)*.18);
+      const gain = Math.round(ROOTS[state.root].speed * decay);
+      details = addProgress(gain);
+      result = `你依照自身功法完成一次有效修炼；同法连续使用的收益已按次数递减。${details}`;
+      state.lastFree = "train";
+    } else if (/采药|灵药|挖药|找药/.test(action)) {
+      const roll = seeded();
+      if (roll < .2) { state.hp-=10; result="你在药香最浓处惊动守护妖兽，带伤退回，只保住半株灵草。"; addItem("半株灵草"); }
+      else { addItem("常见灵药"); state.stones+=1; result="你沿背阴灵脉找到几株常见灵药，留下一株自用，其余换得一块灵石。"; }
+      state.lastFree="herb"; state.repeatTrain=0;
+    } else if (/炼丹|开炉|丹炉/.test(action)) {
+      const hasHerb = state.items.some(x=>/药|灵草|黄精|紫猴花/.test(x));
+      const hasFormula = state.items.some(x=>/丹方|丹诀/.test(x));
+      if (!hasHerb || !hasFormula) result="你检查完炉与药，发现丹方或灵药不全；强炼只会把家底烧成灰。";
+      else if (seeded() < .42) { removeItem(state.items.find(x=>/药|灵草|黄精|紫猴花/.test(x))); result="火候在最后一刻失控，灵药化成焦灰；你记下了失败时的气味。"; state.clues+=1; }
+      else { addItem("自炼养气丹"); result="丹炉轻响，一枚品相普通的养气丹滚入玉盘。"; }
+      state.lastFree="alchemy"; state.repeatTrain=0;
+    } else if (/坊市|交易|买|卖|拍卖/.test(action)) {
+      if (state.stones >= 2) { state.stones-=2; addItem("养气散"); result="你在三家摊位间比价，用两块灵石换到一包来路清楚的养气散。"; }
+      else { state.stones+=1; result="你没有足够灵石，只能替摊主跑一趟腿，换得一块下品灵石。"; }
+      state.lastFree="market"; state.repeatTrain=0;
+    } else if (/疗伤|休息|睡|养伤/.test(action)) {
+      const heal = Math.min(18,state.maxHp-state.hp); state.hp+=heal; result=`你封住杂念休整数日，气血恢复 ${heal}。`;
+      state.lastFree="rest"; state.repeatTrain=0;
+    } else if (/跑|逃|撤|离开|保命/.test(action)) {
+      state.attention=Math.max(0,state.attention-3); result="你提前清掉痕迹，换路线离开。眼前机缘丢了，追踪你的气息也淡了。";
+      state.lastFree="escape"; state.repeatTrain=0;
+    } else if (/偷|抢|杀|攻击|动手|夺/.test(action)) {
+      const risk = 38 + state.attention + ROOTS[state.root].attention;
+      if (seeded()*100 < risk) { const d=18+Math.floor(seeded()*22); state.hp-=d; result=`你主动越线，世界立刻还手。对方的反击让你气血 -${d}，你的气息也被记下。`; state.attention+=5; }
+      else { state.stones+=3; result="你在对方反应前夺到三块灵石，却也留下了无法彻底抹去的因果。"; state.attention+=7; }
+      if (state.rank>=23) {
+        const loss=4+Math.floor(seeded()*8);
+        state.lifeLoss=(state.lifeLoss||0)+loss;
+        result+=` 你在人界强行调动天地灵力，精元受损，寿元折损约${loss}年。`;
+      }
+      state.lastFree="violence"; state.repeatTrain=0;
+    } else if (/韩立/.test(action)) {
+      addRelation("韩立",1); result="你试着接近韩立。他没有透露底牌，只用几句平淡的话确认了你的来意。";
+      state.lastFree="social"; state.repeatTrain=0;
+    } else if (/墨大夫/.test(action)) {
+      state.clues+=2; state.attention+=2; result="你把问题绕到墨大夫身边。他的回答温和周全，真正关键的地方一个字也没落下。";
+      state.lastFree="social"; state.repeatTrain=0;
+    } else if (/南宫婉/.test(action)) {
+      addRelation("南宫婉",1); result="你把话说得简短直接。她没有多留，只在离开前看了一眼周围禁制。";
+      state.lastFree="social"; state.repeatTrain=0;
+    } else {
+      state.clues+=1; result=`你执行了“${action}”。行动没有凭空带来奇迹，却让你确认了一处细节并留下一条退路。`;
+      state.lastFree="other"; state.repeatTrain=0;
+    }
+    state.outcome=result;
+    state.history.push(`第${state.turn}轮｜自由行动｜${action}｜${result}`);
+    state.turn++;
+    state.phase=phaseFor(state.time,state.turn);
+    state.freeOpen=false;
+    if (state.hp<=0) die("你主动选择的行动招来了真实后果，伤势最终没有撑过去。");
+    else if (remainingLife()<=0) die("寿元走到尽头，最后一次吐纳没有再等来天亮。");
+    else { saveState(); renderGame(); }
+  }
+
+  function die(reason) {
+    state.dead=true;
+    state.deathReason=reason;
+    state.outcome="";
+    saveState();
+    renderGame();
+  }
+
+  function topRelations() {
+    return Object.entries(state.relations).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  }
+
+  function snapshotText() {
+    const recent=state.history.slice(-20).map(x=>x.split("｜").slice(0,3).join("｜")).join("；").slice(0,360);
+    return `=== 凡人修仙传穿越 · 存档 V1.1 ===\n时间点：${state.time}${TIMEPOINTS[state.time].name}｜身份：${IDENTITIES[state.identity].name}｜灵根：${ROOTS[state.root].name}\n名字：${state.name}｜境界：${realmLabel(state.rank)}｜年龄：${formatAge(state.age)}岁｜本境寿数：${lifeBand(state.rank)}｜推定剩余寿元：约${remainingLife()}年｜灵石：${state.stones}块\n剧情进度：${state.phase}｜第${state.turn}轮｜地点：${state.location}\n气血：${state.hp}/${state.maxHp}｜修为：${state.progress}%｜寿元折损：${state.lifeLoss||0}年｜线索：${state.clues}\n丹药/法宝/物品：${state.items.join("、")||"无"}\n剧情摘要：${recent||"刚刚醒来"}\nDATA:${JSON.stringify(state)}\n=== 存档结束 ===`;
+  }
+
+  function showPanel(mode) {
+    modalMode=mode;
+    renderGame();
+  }
+
+  function panelContent() {
+    if (!modalMode) return "";
+    if (modalMode === "修士") {
+      return `<h3>修士面板</h3><dl class="fr-status-list"><div><dt>名字</dt><dd>${esc(state.name)}</dd></div><div><dt>境界</dt><dd>${esc(realmLabel(state.rank))}</dd></div><div><dt>灵根</dt><dd>${esc(ROOTS[state.root].name)}</dd></div><div><dt>年龄</dt><dd>${formatAge(state.age)}岁</dd></div><div><dt>本境寿数</dt><dd>${esc(lifeBand(state.rank))}</dd></div><div><dt>剩余寿元</dt><dd>约${remainingLife()}年</dd></div><div><dt>寿元折损</dt><dd>${state.lifeLoss||0}年</dd></div><div><dt>灵石</dt><dd>${state.stones}块</dd></div><div><dt>状态</dt><dd>${esc(conditionLabel())}</dd></div></dl><p class="text-muted">功法：${esc(state.items.find(x=>/诀|功|经/.test(x))||"无")}｜法宝：${esc(state.items.find(x=>/法器|古宝|鼎|炉|符/.test(x))||"无")}</p><p class="text-muted">丹药与灵药：${esc(state.items.filter(x=>/丹|药|灵草|黄精|紫猴花/.test(x)).slice(0,5).join("、")||"无")}</p><p class="text-muted">人界修炼终点：化神大圆满；之后需寻找空间节点、逆灵通道或其他飞升路径进入灵界。</p>`;
+    }
+    if (modalMode === "任务") {
+      return `<h3>任务面板</h3><p><span class="viz-badge">主线 · 进行中</span> ${esc(state.phase)}：在当前大势中活下去，并找到下一条仙路。</p><p><span class="viz-badge">主线 · ？？？</span> 尚未解锁。</p><p><span class="viz-badge">支线</span> ${esc(IDENTITIES[state.identity].name)}身份线：第${Math.min(5,Math.floor((state.turn-1)/5)+1)}阶段。</p><p><span class="viz-badge">日常 · 可执行</span> 修炼、采药、炼丹或坊市交易。</p>`;
+    }
+    if (modalMode === "提示") {
+      const urgent=state.hp<35?"· 你已带重伤，优先疗伤或跑路。":"· 当前没有必须立刻处理的重伤。";
+      const bottleneck=state.progress>=90?"· 修为已近瓶颈，寻找丹药或事件机缘。":"· 可用自由行动完成一次有效修炼。";
+      return `<h3>提示</h3><p><strong>主线与支线</strong><br>${esc(urgent)}<br>${esc(bottleneck)}<br>· 当前节点：${esc(state.phase)}。</p><p><strong>角色互动</strong><br>· 最近关系：${esc(topRelations().map(x=>x[0]).join("、")||"尚未建立")}。<br>· 线索共${state.clues}条；观察选项更容易留下后手。</p><p><strong>系统操作</strong><br>· 自由行动支持修炼、采药、炼丹、坊市、疗伤、跑路、找人、攻击。<br>· 同一种修炼方式连续使用会收益递减。</p>`;
+    }
+    if (modalMode === "存档") {
+      return `<h3>存档</h3><p class="text-muted">进度已自动保存在当前浏览器。下面的快照也可复制到其他对话继续。</p><pre class="fr-snapshot" id="fr-snapshot">${esc(snapshotText())}</pre><div class="fr-modal-actions"><button type="button" class="btn btn-primary" data-action="copy-save">复制存档</button></div>`;
+    }
+    if (modalMode === "读取") {
+      return `<h3>读取存档</h3><div class="fr-import"><label class="form-label" for="fr-import-text">粘贴完整存档快照</label><textarea id="fr-import-text" class="form-control" placeholder="粘贴含 DATA: 的存档"></textarea></div><div class="fr-modal-actions"><button type="button" class="btn btn-primary" data-action="import-save">读取</button></div><p id="fr-import-msg" class="text-destructive" aria-live="polite"></p>`;
+    }
+    if (modalMode === "结算") {
+      const mark=state.history.slice(-8).map(x=>`<li>${esc(x.split("｜").slice(0,3).join("｜"))}</li>`).join("");
+      return `<h3>第${Math.max(1,Math.ceil(state.turn/10))}章 · 结算</h3><p>${esc(state.name)}在${esc(state.phase)}中活到了第${state.turn}轮，留下${state.clues}条线索与${state.items.length}件随身物。</p><p><strong>世界动态</strong>：${esc(briefText())}</p><ul class="fr-list">${mark||"<li>尚无记录</li>"}</ul>`;
+    }
+    return "";
+  }
+
+  function renderIntro() {
+    const saved=loadSaved();
+    app.innerHTML=`<section class="fr-mast"><div class="fr-kicker">凡人 · 人界篇</div><div class="fr-quote"><p>“这世间多少好景色，</p><p>你就代为师去看看吧。”</p><p class="text-muted">——墨大夫·遗信</p></div></section><section class="card"><p>这一次，你和我都不再是旁观者。</p><p class="text-muted">选择会留下数值、关系与伤势；冒进会死，跑路不丢人。</p><div class="fr-setup-actions"><button type="button" class="btn btn-primary" data-action="begin-setup">开始穿越</button>${saved?"<button type=\"button\" class=\"btn\" data-action=\"resume\">继续上次存档</button>":""}</div></section>`;
+  }
+
+  function setupBackButton() {
+    return `<button type="button" class="btn btn-ghost" data-action="setup-back">返回上一步</button>`;
+  }
+
+  function renderSetup() {
+    if (draft.step === "intro") { renderIntro(); return; }
+    if (draft.step === "time") {
+      app.innerHTML=`<section class="fr-mast"><div class="fr-step">第一步 · 落入何时</div><p>山风越过茅屋，你醒在故事尚未写定的一刻。</p></section><div class="viz-grid">${Object.entries(TIMEPOINTS).map(([key,x])=>`<button type="button" class="btn viz-tile" data-time="${key}"><span class="fr-choice-title"><strong>${esc(x.name)}</strong></span><span class="fr-choice-hint">${esc(x.subtitle)}</span></button>`).join("")}</div><div class="fr-setup-actions">${setupBackButton()}</div>`;
+      return;
+    }
+    if (draft.step === "identity") {
+      app.innerHTML=`<section class="fr-mast"><div class="fr-step">你记得的事</div><p>${esc(TIMEPOINTS[draft.time].memory)}</p><p class="text-muted">清单之外的信息，你不知道，世界不会替你补。</p></section><section><div class="fr-step">第二步 · 你醒来是什么身份</div><div class="viz-grid">${Object.entries(IDENTITIES).map(([key,x])=>`<button type="button" class="btn viz-tile" data-identity="${key}"><span class="fr-choice-title"><strong>${esc(x.name)}</strong></span><span class="fr-choice-hint">${esc(x.desc)}</span></button>`).join("")}</div><div class="fr-setup-actions">${setupBackButton()}</div></section>`;
+      return;
+    }
+    if (draft.step === "root") {
+      app.innerHTML=`<section class="fr-mast"><div class="fr-step">第三步 · 你的灵根</div><p>资质决定修炼速度，也决定多少双眼睛会提前看见你。</p></section><div class="viz-grid">${Object.entries(ROOTS).map(([key,x])=>`<button type="button" class="btn viz-tile" data-root="${key}"><span class="fr-choice-title"><strong>${esc(x.name)}</strong></span><span class="fr-choice-hint">${esc(x.desc)}</span></button>`).join("")}</div><div class="fr-setup-actions">${setupBackButton()}</div>`;
+      return;
+    }
+    if (draft.step === "name") {
+      const remembered=(()=>{try{return localStorage.getItem(LAST_NAME_KEY)||""}catch(_){return""}})();
+      app.innerHTML=`<section class="fr-mast"><div class="fr-step">最后一步 · 留下名字</div><p>远处有人正要喊你。这个世界第一个认识的，必须是你的名字。</p></section><div class="fr-name-row"><div><label for="fr-player-name" class="form-label">你叫什么名字？</label><input id="fr-player-name" class="form-control" maxlength="12" value="${esc(draft.name||remembered)}" placeholder="输入名字"></div><button type="button" class="btn btn-primary" data-action="start-game">踏入人界</button></div><div class="fr-setup-actions">${setupBackButton()}</div><p id="fr-name-msg" class="text-destructive" aria-live="polite"></p>`;
+    }
+  }
+
+  function renderDeath() {
+    app.innerHTML=`<section class="card"><div class="fr-phase fr-death">死亡 · 收束</div><h3>${esc(state.deathReason)}</h3><p>你在这个世界留下的痕迹：${esc(state.history.slice(-3).map(x=>x.split("｜")[1]).join("、")||state.name)}</p><p class="text-muted">世界不会等你。想再走一遍——换一个身份，或换一个时间点。</p><div class="fr-setup-actions"><button type="button" class="btn btn-primary" data-action="new-life">重新入世</button><button type="button" class="btn" data-action="show-history">查看此生</button></div></section>${modalMode?`<section class="card fr-modal-layer">${panelContent()}<div class="fr-modal-actions"><button type="button" class="btn" data-action="close-panel">关闭</button></div></section>`:""}`;
+  }
+
+  function renderAscension() {
+    app.innerHTML=`<section class="card"><div class="fr-phase">人界篇 · 飞升结算</div><h3>${esc(state.name)}，飞升灵界</h3><p>你在人界走到${esc(realmLabel(state.rank))}，以${formatAge(state.age)}岁之身穿过空间节点。</p><p class="text-muted">本版本的人界篇到此收束；灵界从炼虚、合体、大乘的道路另行展开。</p><div class="fr-setup-actions"><button type="button" class="btn btn-primary" data-panel="结算">查看人界结算</button><button type="button" class="btn" data-action="new-life">重走人界</button></div></section>${modalMode?`<section class="card fr-modal-layer">${panelContent()}<div class="fr-modal-actions"><button type="button" class="btn" data-action="close-panel">关闭</button></div></section>`:""}`;
+  }
+
+  function renderStatus(ev) {
+    const rel=topRelations();
+    return `<aside class="card fr-status"><div class="fr-phase">${esc(TIMEPOINTS[state.time].name)} · 第${state.turn}轮</div><h3>${esc(state.name)}</h3><dl class="fr-status-list"><div><dt>境界</dt><dd>${esc(realmLabel(state.rank))}</dd></div><div><dt>年龄</dt><dd>${formatAge(state.age)}岁</dd></div><div><dt>本境寿数</dt><dd>${esc(lifeBand(state.rank))}</dd></div><div><dt>剩余寿元</dt><dd>约${remainingLife()}年</dd></div><div><dt>灵石</dt><dd>${state.stones}块</dd></div><div><dt>地点</dt><dd>${esc(ev.location||state.location)}</dd></div><div><dt>状态</dt><dd>${esc(conditionLabel())}</dd></div></dl><p class="text-small text-muted">寿元按原著“余岁”口径估算，并非固定整百硬上限。</p><p class="text-small text-muted">修为 ${state.progress}%</p><progress max="100" value="${state.progress}" aria-label="修为进度 ${state.progress}%"></progress><p class="text-small text-muted">气血 ${Math.max(0,state.hp)}/${state.maxHp}</p><progress max="${state.maxHp}" value="${Math.max(0,state.hp)}" aria-label="气血 ${Math.max(0,state.hp)}"></progress><p><span class="viz-badge">${esc(ROOTS[state.root].short)}</span> <span class="viz-badge">线索 ${state.clues}</span>${state.lifeLoss?` <span class="viz-badge">折寿 ${state.lifeLoss}年</span>`:""}</p><p class="text-small text-muted">随身：${esc(state.items.slice(-5).join("、")||"无")}</p><p class="text-small text-muted">关系：${esc(rel.map(x=>`${x[0]} ${x[1]>0?"+":""}${x[1]}`).join("、")||"尚无")}</p></aside>`;
+  }
+
+  function renderGame() {
+    if (state.ascended) { renderAscension(); bindDynamic(); return; }
+    if (state.dead) { renderDeath(); bindDynamic(); return; }
+    const ev=currentEvent();
+    state.location=ev.location||state.location;
+    const opening=state.opening?`<div class="fr-outcome">${esc(state.opening)}</div>`:"";
+    const outcome=state.outcome?`<div class="fr-outcome"><strong>上一轮结果：</strong>${esc(state.outcome)}</div>`:"";
+    const free=`<div class="fr-free" ${state.freeOpen?"":"hidden"}><label for="fr-free-text" class="form-label">自由行动</label><textarea id="fr-free-text" class="form-control" placeholder="例如：先疗伤；去坊市卖药；找韩立试探；连夜跑路……"></textarea><div class="fr-setup-actions"><button type="button" class="btn btn-primary" data-action="submit-free">确认行动</button><button type="button" class="btn" data-action="cancel-free">取消</button></div><p class="text-small text-muted">自由行动由本地规则解析；行动越线，世界会真实还手。</p></div>`;
+    const choices=[ev.safe,ev.bold,ev.explore,{title:"做任何你想做的事",hint:"自己写行动；修炼、采药、炼丹、交易、找人、跑路或冒险。"}];
+    app.innerHTML=`<div class="fr-toolbar"><button type="button" class="btn" data-panel="修士">修士</button><button type="button" class="btn" data-panel="任务">任务</button><button type="button" class="btn" data-panel="提示">提示</button><button type="button" class="btn" data-panel="存档">存档</button><button type="button" class="btn" data-panel="读取">读取</button><button type="button" class="btn btn-ghost" data-panel="结算">本章结束</button><button type="button" class="btn btn-ghost" data-action="arm-restart">${state.restartArmed?"确认重开":"重开"}</button></div><div class="fr-layout"><main class="card fr-story">${opening}${outcome}<div class="fr-phase">${esc(state.phase)}${state.turn%10===0?" · 名场面节点":""}</div><h3>${esc(ev.title)}</h3><p>${esc(ev.narration)}</p><div class="fr-dialogue"><strong>${esc(ev.speaker)}：</strong>${esc(ev.line)}</div><div class="fr-broadcast text-small">【境界 ${esc(realmLabel(state.rank))}｜年龄 ${formatAge(state.age)}岁｜剩余寿元 约${remainingLife()}年｜灵石 ${state.stones}块｜${esc(ev.location||state.location)}】</div><div class="viz-grid">${choices.map((x,i)=>`<button type="button" class="btn viz-tile" data-choice="${["safe","bold","explore","free"][i]}"><span class="fr-kicker">${["顺应 · 稳妥","逆反 · 搞事","观望 · 探索","自由行动"][i]}</span><span class="fr-choice-title"><strong>${esc(x.title)}</strong></span><span class="fr-choice-hint">${esc(x.hint)}</span></button>`).join("")}</div>${free}<div class="fr-broadcast text-small text-muted">${esc(briefText())}</div><details><summary>查看经历</summary><ul class="fr-list fr-history">${state.history.slice().reverse().map(x=>`<li>${esc(x)}</li>`).join("")||"<li>故事刚刚开始。</li>"}</ul></details></main>${renderStatus(ev)}</div>${modalMode?`<section class="card fr-modal-layer">${panelContent()}<div class="fr-modal-actions"><button type="button" class="btn" data-action="close-panel">关闭</button></div></section>`:""}`;
+    state.opening="";
+    saveState();
+    bindDynamic();
+  }
+
+  function bindDynamic() {
+    root.querySelectorAll("[data-choice]").forEach(btn=>btn.addEventListener("click",()=>choosePath(btn.dataset.choice)));
+    root.querySelectorAll("[data-panel]").forEach(btn=>btn.addEventListener("click",()=>showPanel(btn.dataset.panel)));
+  }
+
+  root.addEventListener("click", async (e) => {
+    const btn=e.target.closest("button");
+    if (!btn || !root.contains(btn)) return;
+    if (btn.dataset.time) { draft.time=btn.dataset.time; draft.step="identity"; renderSetup(); return; }
+    if (btn.dataset.identity) { draft.identity=btn.dataset.identity; draft.step="root"; renderSetup(); return; }
+    if (btn.dataset.root) { draft.root=btn.dataset.root; draft.step="name"; renderSetup(); return; }
+    const action=btn.dataset.action;
+    if (!action) return;
+    if (action==="begin-setup") { draft={step:"time",time:null,identity:null,root:null,name:""}; renderSetup(); }
+    if (action==="resume") { state=loadSaved(); if(state){modalMode=null;renderGame();} }
+    if (action==="setup-back") {
+      const order=["intro","time","identity","root","name"]; const i=order.indexOf(draft.step); draft.step=order[Math.max(0,i-1)]; renderSetup();
+    }
+    if (action==="start-game") {
+      const input=root.querySelector("#fr-player-name"); const name=input?.value.trim();
+      if (!name) { const m=root.querySelector("#fr-name-msg"); if(m)m.textContent="名字不能为空。"; return; }
+      draft.name=name; initGame();
+    }
+    if (action==="submit-free") { const text=root.querySelector("#fr-free-text")?.value||""; resolveFreeAction(text); }
+    if (action==="cancel-free") { state.freeOpen=false; renderGame(); }
+    if (action==="close-panel") { modalMode=null; renderGame(); }
+    if (action==="copy-save") {
+      const text=snapshotText(); let ok=false;
+      try { await navigator.clipboard.writeText(text); ok=true; } catch (_) {
+        const pre=root.querySelector("#fr-snapshot"); if(pre){const range=document.createRange();range.selectNodeContents(pre);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);ok=document.execCommand("copy");sel.removeAllRanges();}
+      }
+      btn.textContent=ok?"已复制":"请手动复制";
+    }
+    if (action==="import-save") {
+      const raw=root.querySelector("#fr-import-text")?.value||""; const msg=root.querySelector("#fr-import-msg");
+      try { const marker=raw.match(/DATA:(\{[\s\S]*\})\n=== 存档结束 ===/); if(!marker)throw new Error("未找到完整 DATA 段"); const incoming=JSON.parse(marker[1]); if(!incoming.name||!incoming.time||!incoming.identity||!incoming.root)throw new Error("存档字段不完整"); if(incoming.lifeLoss==null)incoming.lifeLoss=0;if(incoming.lifespanBonus==null)incoming.lifespanBonus=0;if(incoming.rank>26)incoming.rank=26;state=incoming; state.freeOpen=false; modalMode=null; saveState(); renderGame(); } catch(err) { if(msg)msg.textContent=`读取失败：${err.message}`; }
+    }
+    if (action==="arm-restart") {
+      if (state.restartArmed) { const keep=state.name; clearSave(); state=null; modalMode=null; draft={step:"time",time:null,identity:null,root:null,name:keep}; renderSetup(); }
+      else { state.restartArmed=true; saveState(); renderGame(); setTimeout(()=>{if(state&&state.restartArmed){state.restartArmed=false;saveState();renderGame();}},4000); }
+    }
+    if (action==="new-life") { const keep=state?.name||""; clearSave();state=null;modalMode=null;draft={step:"time",time:null,identity:null,root:null,name:keep};renderSetup(); }
+    if (action==="show-history") { modalMode="结算"; renderDeath(); }
+  });
+
+  renderSetup();
+})();
+</script>
+
+<script id="codex-visualization-floating-ui-core" src="https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js"></script>
+<script id="codex-visualization-floating-ui-dom" src="https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js"></script>
+<script id="codex-visualization-lucide" async src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+<script id="codex-visualization-tooltip">/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-call, typescript/no-unsafe-return */
+// Runs inside the visualization sandbox, not the host webview.
+(() => {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set(["top", "right", "bottom", "left"]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =>
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest("[data-tooltip]")
+      : null;
+  const containsTarget = (trigger, target) =>
+    target?.nodeType != null && trigger.contains(target);
+  const getContent = (trigger) =>
+    trigger.getAttribute("data-tooltip")?.trim() ?? "";
+  const getPlacement = (trigger) => {
+    const placement = trigger.getAttribute("data-tooltip-placement");
+    return tooltipPlacements.has(placement) ? placement : "top";
+  };
+  const getTooltip = () => {
+    if (tooltip == null) {
+      tooltip = document.createElement("div");
+      tooltip.id = tooltipId;
+      tooltip.className = "tooltip";
+      tooltip.setAttribute("role", "tooltip");
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) => {
+    const ids = new Set(
+      (trigger.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute("aria-describedby");
+    } else {
+      trigger.setAttribute("aria-describedby", [...ids].join(" "));
+    }
+  };
+  const clearOpenTimeout = () => {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) => {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) => {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              "--tooltip-available-width",
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              "--tooltip-available-height",
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: "fixed",
+    })
+      .then(({ x, y }) => {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = "visible";
+      })
+      .catch(() => {
+        if (activeTrigger === trigger && request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) => {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = "hidden";
+    floating.style.transform = "translate(0, 0)";
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () => {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) => {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() < skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() => {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(":focus-visible")) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) => {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () => {
+    closeTooltip(false);
+    document.removeEventListener("pointerover", handlePointerOpen);
+    document.removeEventListener("pointerout", handleLeave);
+    document.removeEventListener("focusin", handleFocusIn);
+    document.removeEventListener("focusout", handleLeave);
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("contextmenu", handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener("pointerover", handlePointerOpen);
+  document.addEventListener("pointerout", handleLeave);
+  document.addEventListener("focusin", handleFocusIn);
+  document.addEventListener("focusout", handleLeave);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("contextmenu", handleContextMenu);
+  window.addEventListener("pagehide", destroy, { once: true });
+})();
+</script>
+<script id="codex-visualization-lucide-initialization">(() => {
+  const initialize = () => {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById("codex-visualization-lucide")
+    ?.addEventListener("load", initialize, { once: true });
+})();
+</script>
+</body>
+</html>
