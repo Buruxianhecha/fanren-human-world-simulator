@@ -1,0 +1,14 @@
+{
+  "name": "fanren-human-world-simulator",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "displayName": "凡人修仙传：人界篇开放世界模拟器",
+  "description": "一款以浏览器本地存档驱动的《凡人修仙传》人界篇非官方开放世界人生模拟器。"
+}
